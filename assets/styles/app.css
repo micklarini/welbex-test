@@ -1,0 +1,21 @@
+body {
+    background-color: lightgray;
+}
+
+.data-entries {
+  width: 100%;
+  background-color: white;
+}
+
+.data-entries th {
+  background-color: darkgrey;
+  color: white;
+}
+
+.data-entries th.sortable {
+  cursor: pointer;
+}
+
+.data-entries tr {
+  border-bottom: 1px solid black;
+}
