@@ -21,7 +21,17 @@ class EntryController extends AbstractController
     'quantity' => 'Quantity',
     'distance' => 'Distance',
   ];
-  
+
+  protected $propConverters;
+
+  public function __construct() {
+      $this->propConverters = [
+        'EntryDate' => function(string $value) {
+            return \DateTime::createFromFormat('Y-m-d', $value);
+        }
+      ];
+  }
+
   /**
    * @Route("/data/entries/", name="entries")
    */
@@ -31,22 +41,24 @@ class EntryController extends AbstractController
     $total = $pages = 0;
     $pagesize = $request->query->get('pagesize') ? $request->query->get('pagesize') : 25;
     $entryRepository = $entityManager->getRepository('\App\Entity\ListEntry');
-    
-    try {
 
+    try {
       $sortOrder = ['EntryDate' => 'DESC'];
       $customSort = $request->query->get('sort');
-      $sortOrder = (!empty($customSort) && self::PROP_MAP[$customSort]) 
+      $sortOrder = (!empty($customSort) && self::PROP_MAP[$customSort])
           ?[self::PROP_MAP[$customSort] => 'ASC'] + $sortOrder
           : $sortOrder;
-      
+
       $criteria = Criteria::create()
         ->orderBy($sortOrder);
-      if (!empty($request->query->get('filter'))) {
+      $filter = $request->query->get('filter');
+
+      if (!empty($filter)) {
+        $field = self::PROP_MAP[$request->query->get('field')];
         $op = $request->query->get('condition');
         $criteria->andWhere(Criteria::expr()->$op(
-          self::PROP_MAP[$request->query->get('field')], 
-          $request->query->get('filter')
+          $field,
+          isset($this->propConverters[$field]) ? $this->propConverters[$field]($filter) : $filter
         ));
       }
 
@@ -56,16 +68,20 @@ class EntryController extends AbstractController
       $criteria->setMaxResults($pagesize)
         ->setFirstResult(($request->query->get('page') - 1) * $pagesize);
       $entries = $entryRepository->matching($criteria);
-      
+
       foreach ($entries as $entry) {
           $data[] = $serializer->normalize($entry, null);
       }
     }
     catch (\Exception $e) {
-      $data['error'] = $e->getMessage();
+
+      return new JsonResponse([
+        'query' => $request->query->all(),
+        'error' => $e->getMessage()
+      ]);
     }
     $response = new JsonResponse([
-        'query' => $request->query->all(), 
+        'query' => $request->query->all(),
         'data' => ['items' => $data, 'pages' => $pages, 'total' => $total]
     ]);
     $response->setEncodingOptions($response->getEncodingOptions() | JSON_PRETTY_PRINT);

@@ -41,6 +41,7 @@
 </template>
 
 <script>
+import moment from 'moment';
 
 export default {
   name: 'DataTable',
@@ -52,6 +53,18 @@ export default {
         'condition',
         'filter',
       ],
+
+      validators: {
+        'date': (value) => moment(value, 'DD.MM.YYYY', true).isValid(),
+        'name': (value) => true,
+        'quantity': (value) => value.isInteger(),
+        'distance': (value) => isFinite(value)
+      },
+
+      converters: {
+        date: (value) => moment(value, 'DD.MM.YYYY', true).format('YYYY-MM-DD')
+      },
+
       dataEntries: [],
       pages: 0,
       currentPage: undefined,
@@ -107,9 +120,15 @@ export default {
 
       this.timer = setTimeout(
         (params) => {
+          if (params.filter !== undefined ) {
+            if (this.validators[params.field] !== undefined && !this.validators[params.field](params.filter))
+              return;
+            if (this.converters[params.field] !== undefined)
+              params.filter = this.converters[params.field](params.filter);
+          }
           this.makePopup(event);
           this.$eventBus.$emit('fetchEntries', params);
-        }, 
+        },
         700,
         params
       );
