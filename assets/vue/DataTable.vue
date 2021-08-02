@@ -23,9 +23,9 @@
     <thead>
       <tr>
         <th>Дата</th>
-        <th class="sortable" @click="clickLink($event)" data-field="sort" data-val="name">Название</th>
-        <th class="sortable" @click="clickLink($event)" data-field="sort" data-val="quantity">Количество</th>
-        <th class="sortable" @click="clickLink($event)" data-field="sort" data-val="distance">Расстояние</th>
+        <th class="sortable" @click="clickLink($event)" data-field="sort" data-val="name">Название <span></span></th>
+        <th class="sortable" @click="clickLink($event)" data-field="sort" data-val="quantity">Количество <span></span></th>
+        <th class="sortable" @click="clickLink($event)" data-field="sort" data-val="distance">Расстояние <span></span></th>
       </tr>
     </thead>
     <tbody>
@@ -52,7 +52,6 @@ export default {
         'condition',
         'filter',
       ],
-
       dataEntries: [],
       pages: 0,
       currentPage: undefined,
@@ -69,7 +68,14 @@ export default {
   },
   methods: {
     clickLink(event) {
-      let params = {}
+      let params = {};
+      if (event.target.dataset.field == 'sort') {
+        let sorts = document.querySelectorAll('[data-field="sort"] > span')
+        for (const item of sorts) {
+          item.innerHTML = '';
+        }
+        document.querySelector(`[data-field="sort"][data-val="${event.target.dataset.val}"] > span`).innerHTML ='&#129081';
+      }
       params[event.target.dataset.field] = event.target.dataset.val;
       this.makePopup(event);
       this.$eventBus.$emit('fetchEntries', params);
@@ -90,23 +96,22 @@ export default {
     },
     startTimer(event) {
       this.stopTimer();
-      this.makePopup(event);
-      let dataFilter = {};
+      let params = {};
 
       const selector = this.filterKeys.map((val) => `.filter > [data-field="${val}"]`).join(', ');
       let items = document.querySelectorAll(selector);
 
       for (const item of items) {
-        dataFilter[item.dataset.field] = item.value !== '' ? item.value : undefined;
+        params[item.dataset.field] = item.value !== '' ? item.value : undefined;
       }
 
       this.timer = setTimeout(
         (params) => {
-//
+          this.makePopup(event);
           this.$eventBus.$emit('fetchEntries', params);
         }, 
         700,
-        dataFilter
+        params
       );
     },
     stopTimer() {
