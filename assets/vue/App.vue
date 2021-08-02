@@ -17,6 +17,7 @@ export default {
         page: 1,
         pagesize: 25,
         sort: undefined,
+        field: undefined,
         condition: '=',
         filter: undefined,
       },
@@ -38,10 +39,9 @@ export default {
           params[key] = value;
         }
       }
-console.log(params);
       this.$http.get(this.url, { params })
         .then(response => {
-            this.$eventBus.$emit('entriesFetched', response.data.data);
+            this.$eventBus.$emit('entriesFetched', response.data);
         });
     }
   }

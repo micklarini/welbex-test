@@ -2,6 +2,10 @@ body {
     background-color: lightgray;
 }
 
+.filter, .pager {
+  margin-bottom: 1em;
+}
+
 .data-entries {
   width: 100%;
   background-color: white;
@@ -12,10 +16,21 @@ body {
   color: white;
 }
 
-.data-entries th.sortable {
+.data-entries th.sortable, .pager span.link {
   cursor: pointer;
 }
 
 .data-entries tr {
   border-bottom: 1px solid black;
+}
+
+.pager span {
+  padding: 6px;
+  margin-right: 6px;
+}
+
+.pager span.current {
+  background-color: darkgrey;
+  color: white;
+  font-weight: bold;
 }
