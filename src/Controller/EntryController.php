@@ -22,16 +22,20 @@ class EntryController extends AbstractController
     'distance' => 'Distance',
   ];
 
-  protected $propConverters;
-
-  public function __construct() {
-      $this->propConverters = [
-        'EntryDate' => function(string $value) {
-            return \DateTime::createFromFormat('Y-m-d', $value);
-        }
-      ];
+  protected const PROP_CONV = [
+    'EntryDate' => 'convertEntryDate'
+  ];
+  
+  protected static function convertEntryDate(string $value): ?\DateTime 
+  {
+    try {
+      return \DateTime::createFromFormat('Y-m-d', $value);
+    }
+    catch (\Exception $e) {
+      return null;
+    }
   }
-
+  
   /**
    * @Route("/data/entries/", name="entries")
    */
@@ -58,7 +62,7 @@ class EntryController extends AbstractController
         $op = $request->query->get('condition');
         $criteria->andWhere(Criteria::expr()->$op(
           $field,
-          isset($this->propConverters[$field]) ? $this->propConverters[$field]($filter) : $filter
+          isset(self::PROP_CONV[$field])  ? call_user_func('self::' . self::PROP_CONV[$field], $filter) : $filter
         ));
       }
 
