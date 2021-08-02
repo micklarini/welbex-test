@@ -42,6 +42,13 @@ class EntryController extends AbstractController
       
       $criteria = Criteria::create()
         ->orderBy($sortOrder);
+      if (!empty($request->query->get('filter'))) {
+        $op = $request->query->get('condition');
+        $criteria->andWhere(Criteria::expr()->$op(
+          self::PROP_MAP[$request->query->get('field')], 
+          $request->query->get('filter')
+        ));
+      }
 
       $total = $entryRepository->matching($criteria)->count();
       $pages = intdiv($total, $pagesize) + (int) (($total % $pagesize) > 0);

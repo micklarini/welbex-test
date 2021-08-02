@@ -1,7 +1,7 @@
 <template>
     <div class="container">
-        <h1>WelbeX test project</h1>
-        <DataTable></DataTable>
+      <h1>WelbeX test project</h1>
+      <DataTable></DataTable>
     </div>
 </template>
 
@@ -18,7 +18,7 @@ export default {
         pagesize: 25,
         sort: undefined,
         field: undefined,
-        condition: '=',
+        condition: 'eq',
         filter: undefined,
       },
     }
@@ -32,14 +32,15 @@ export default {
   },
   methods: {
     fetchEntries(...args) {
-      let params = this.tableParams;
-      const argParams = args.shift();
-      if (argParams !== undefined) {
-        for (const [key, value] of Object.entries(argParams)) {
-          params[key] = value;
-        }
+      if (args !== undefined && args.length > 0) {
+        args.every((argParams) => {
+          for (const [key, value] of Object.entries(argParams)) {
+            if (key in this.tableParams)
+              this.tableParams[key] = value;
+          }
+        });
       }
-      this.$http.get(this.url, { params })
+      this.$http.get(this.url, { params: this.tableParams })
         .then(response => {
             this.$eventBus.$emit('entriesFetched', response.data);
         });
