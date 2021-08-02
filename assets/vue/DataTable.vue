@@ -57,7 +57,7 @@ export default {
       validators: {
         'date': (value) => moment(value, 'DD.MM.YYYY', true).isValid(),
         'name': (value) => true,
-        'quantity': (value) => value.isInteger(),
+        'quantity': (value) => !isNaN(value) && parseInt(Number(value)) == value && !isNaN(parseInt(value, 10)),
         'distance': (value) => isFinite(value)
       },
 
